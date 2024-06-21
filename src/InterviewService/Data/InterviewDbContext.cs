@@ -9,7 +9,6 @@ public class InterviewDbContext : DbContext
     {
     }
 
-    public DbSet<Interview> Interviews { get;}
-    public DbSet<Content> Contents { get;}
+    public DbSet<Interview> Interviews { get; set; }
 
 }
