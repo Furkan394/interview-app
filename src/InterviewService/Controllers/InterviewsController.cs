@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using InterviewService.Data;
 using InterviewService.DTOs;
 using InterviewService.Entities;
@@ -21,11 +22,16 @@ public class InterviewsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<InterviewDTO>>> GetAllInterviews()
+    public async Task<ActionResult<List<InterviewDTO>>> GetAllInterviews(string date)
     {
-        var interviews = await _dbContext.Interviews.Include(x => x.Content).ToListAsync();
+        var query = _dbContext.Interviews.OrderBy(x => x.PublishedAt).AsQueryable();
 
-        return _mapper.Map<List<InterviewDTO>>(interviews);
+        if (!string.IsNullOrEmpty(date))
+        {
+            query = query.Where(x => x.UpdatedAt.CompareTo(DateTime.Parse(date).ToUniversalTime()) > 0);
+        }
+
+        return await query.ProjectTo<InterviewDTO>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
     [HttpGet("{id}")]

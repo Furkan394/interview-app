@@ -1,0 +1,32 @@
+[
+    {
+      "id": "c8c3ec17-01bf-49db-82aa-1ef80b833a9f",
+      "title": "Ünlü Röportajı",
+      "authorId": "e03bbeca-a090-4dbf-bf6e-66e8eacf6116",
+      "mediaUrl": "https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_960_720.jpg",
+      "publishedAt": "2022-06-22T11:26:10.63896Z",
+      "createdAt": "2022-06-22T11:26:10.638959Z",
+      "updatedAt": "2022-06-22T11:26:10.638959Z",
+      "text": "It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+    },
+    {
+      "id": "bbab4d5a-8565-48b1-9450-5ac2a5c4a654",
+      "title": "Benim Röportajım",
+      "authorId": "43c8e520-9cc7-4b51-877b-131eeeb98a88",
+      "mediaUrl": "https://cdn.pixabay.com/photo/2012/11/02/13/02/car-63930_960_720.jpg",
+      "publishedAt": "2023-06-22T11:26:10.63896Z",
+      "createdAt": "2023-06-22T11:26:10.63896Z",
+      "updatedAt": "2023-06-22T11:26:10.63896Z",
+      "text": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
+    },
+    {
+      "id": "afbee524-5972-4075-8800-7d1f9d7b0a0c",
+      "title": "Futbolcu Röportajı",
+      "authorId": "04f92416-43c9-4038-9a8d-30007f73dd37",
+      "mediaUrl": "https://cdn.pixabay.com/photo/2016/05/06/16/32/car-1376190_960_720.jpg",
+      "publishedAt": "2024-06-22T11:26:10.638911Z",
+      "createdAt": "2024-06-22T11:26:10.638843Z",
+      "updatedAt": "2024-06-22T11:26:10.638843Z",
+      "text": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged."
+    }
+  ]
