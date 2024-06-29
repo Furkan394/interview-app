@@ -1,4 +1,5 @@
 using AutoMapper;
+using Contracts;
 using InterviewService.DTOs;
 using InterviewService.Entities;
 
@@ -15,5 +16,8 @@ public class MappingProfiles : Profile
                     .ForMember(d => d.Title, o => o.MapFrom(s => s.Title))
                     .ForMember(d => d.MediaUrl, o => o.MapFrom(s => s.MediaUrl));
         CreateMap<CreateInterviewDTO, Content>();
+        CreateMap<InterviewDTO, InterviewCreated>();
+        CreateMap<Interview, InterviewUpdated>().IncludeMembers(i => i.Content);
+        CreateMap<Content, InterviewUpdated>();
     }
 }

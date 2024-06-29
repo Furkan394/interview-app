@@ -1,8 +1,10 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Contracts;
 using InterviewService.Data;
 using InterviewService.DTOs;
 using InterviewService.Entities;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,11 +16,13 @@ public class InterviewsController : ControllerBase
 {
     private readonly InterviewDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public InterviewsController(InterviewDbContext dbContext, IMapper mapper)
+    public InterviewsController(InterviewDbContext dbContext, IMapper mapper, IPublishEndpoint publishEndpoint)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     [HttpGet]
@@ -55,11 +59,15 @@ public class InterviewsController : ControllerBase
 
         await _dbContext.Interviews.AddAsync(interview);
 
+        var newInterview = _mapper.Map<InterviewDTO>(interview);
+
+        await _publishEndpoint.Publish(_mapper.Map<InterviewCreated>(newInterview));
+
         var result = await _dbContext.SaveChangesAsync() > 0;
 
         if (!result) return BadRequest("Could not save changes to the database");
 
-        return CreatedAtAction(nameof(GetInterviewById), new { interview.Id }, _mapper.Map<InterviewDTO>(interview));
+        return CreatedAtAction(nameof(GetInterviewById), new { interview.Id }, newInterview);
     }
 
     [HttpPut("{id}")]
@@ -72,6 +80,8 @@ public class InterviewsController : ControllerBase
         interviewToUpdate.Title = updateInterviewDTO.Title ?? interviewToUpdate.Title;
         interviewToUpdate.MediaUrl = updateInterviewDTO.MediaUrl ?? interviewToUpdate.MediaUrl;
         interviewToUpdate.Content.Text = updateInterviewDTO.Text ?? interviewToUpdate.Content.Text;
+
+        await _publishEndpoint.Publish(_mapper.Map<InterviewUpdated>(interviewToUpdate));
 
         var result = await _dbContext.SaveChangesAsync() > 0;
 
@@ -90,6 +100,8 @@ public class InterviewsController : ControllerBase
         if (interviewToDelete is null) return NotFound();
 
         _dbContext.Interviews.Remove(interviewToDelete);
+
+         await _publishEndpoint.Publish<InterviewDeleted>(new {id = interviewToDelete.Id.ToString()});
 
         var result = await _dbContext.SaveChangesAsync() > 0;
 
