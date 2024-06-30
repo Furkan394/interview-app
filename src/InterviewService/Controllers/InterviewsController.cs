@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Contracts;
@@ -5,6 +6,7 @@ using InterviewService.Data;
 using InterviewService.DTOs;
 using InterviewService.Entities;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,14 +50,13 @@ public class InterviewsController : ControllerBase
         return _mapper.Map<InterviewDTO>(interview);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<InterviewDTO>> Create(CreateInterviewDTO createInterviewDTO)
     {
         var interview = _mapper.Map<Interview>(createInterviewDTO);
 
-        //TODO: add current user
-
-        interview.AuthorId = Guid.NewGuid();
+        interview.AuthorId = Guid.Parse(User.Claims.FirstOrDefault(x => x.Type.Equals("userId", StringComparison.OrdinalIgnoreCase))?.Value);
 
         await _dbContext.Interviews.AddAsync(interview);
 
@@ -70,12 +71,15 @@ public class InterviewsController : ControllerBase
         return CreatedAtAction(nameof(GetInterviewById), new { interview.Id }, newInterview);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, UpdateInterviewDTO updateInterviewDTO)
     {
         var interviewToUpdate = await _dbContext.Interviews.Include(x => x.Content).FirstOrDefaultAsync(x => x.Id == id);
 
         if (interviewToUpdate is null) return NotFound();
+
+        if (!CheckUserClaim(interviewToUpdate.AuthorId.ToString())) return Forbid();
 
         interviewToUpdate.Title = updateInterviewDTO.Title ?? interviewToUpdate.Title;
         interviewToUpdate.MediaUrl = updateInterviewDTO.MediaUrl ?? interviewToUpdate.MediaUrl;
@@ -88,10 +92,9 @@ public class InterviewsController : ControllerBase
         if (!result) return BadRequest("Could not save changes to the database");
 
         return Ok(result);
-
-
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
@@ -99,16 +102,25 @@ public class InterviewsController : ControllerBase
 
         if (interviewToDelete is null) return NotFound();
 
+        if (!CheckUserClaim(interviewToDelete.AuthorId.ToString())) return Forbid();
+
         _dbContext.Interviews.Remove(interviewToDelete);
 
-         await _publishEndpoint.Publish<InterviewDeleted>(new {id = interviewToDelete.Id.ToString()});
+        await _publishEndpoint.Publish<InterviewDeleted>(new { id = interviewToDelete.Id.ToString() });
 
         var result = await _dbContext.SaveChangesAsync() > 0;
 
         if (!result) return BadRequest("Could not save changes to the database");
 
         return Ok();
+    }
 
+    private bool CheckUserClaim(string authorId) 
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(x => x.Type.Equals("userId", StringComparison.OrdinalIgnoreCase))?.Value;
 
+        if (userIdClaim is null || !userIdClaim.Equals(authorId)) return false;
+
+        return true;
     }
 }
