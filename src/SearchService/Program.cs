@@ -18,10 +18,16 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumersFromNamespaceContaining<InterviewUpdatedConsumer>();
 
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
-    
+
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.ReceiveEndpoint("search-interview-created", e => 
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", host =>
+        {
+            host.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
+            host.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        });
+
+        cfg.ReceiveEndpoint("search-interview-created", e =>
         {
             e.UseMessageRetry(r => r.Interval(5, 5)); //retry five times and wait for five seconds between each interval
             e.ConfigureConsumer<InterviewCreatedConsumer>(context); //retry only for interview-created-consumer
